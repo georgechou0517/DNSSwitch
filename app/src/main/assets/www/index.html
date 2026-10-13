@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>DNSSwitch</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<!-- 启动页：2 秒后自动进入主界面 -->
+<div id="splash">
+  <svg class="logo" viewBox="0 0 100 100" fill="none">
+    <path d="M50 6 L86 19 L86 50 C86 70 70 85 50 94 C30 85 14 70 14 50 L14 19 Z"
+          fill="rgba(255,255,255,.16)" stroke="#fff" stroke-width="4"/>
+    <rect x="27" y="33" width="46" height="7" rx="3.5" fill="#fff"/>
+    <rect x="27" y="46" width="46" height="7" rx="3.5" fill="#fff"/>
+    <rect x="27" y="59" width="32" height="7" rx="3.5" fill="#fff"/>
+  </svg>
+  <h1>DNSSwitch</h1>
+  <p>免费 · 无广告 · 加密 DNS 客户端</p>
+</div>
+
+<div id="app" class="hidden">
+
+  <header class="appbar">
+    <div>
+      <h1>DNSSwitch</h1>
+      <div class="sub">传统 DNS + DoH / DoT 并行</div>
+    </div>
+    <span id="status-pill" class="pill"><span class="dot"></span><span id="status-text">已停止</span></span>
+  </header>
+
+  <div id="preview-banner" class="preview-banner hidden">
+    预览模式：未检测到原生桥（NativeBridge），仅可查看界面。请在 Android 应用内使用。
+  </div>
+
+  <main>
+    <!-- ================= 配置页 ================= -->
+    <section id="page-config">
+
+      <!-- 运行控制 -->
+      <div class="card">
+        <button id="btn-power" class="power-btn">启动 DNS 服务</button>
+        <div id="run-status" class="run-status">服务已停止</div>
+        <div id="run-meta" class="run-meta"></div>
+      </div>
+
+      <!-- 区块 1：传统 DNS -->
+      <div class="card">
+        <h2>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+          传统 DNS
+        </h2>
+        <p class="card-desc">UDP / TCP，IPv4 与 IPv6 地址可分别设置，端口完全自定义</p>
+        <div class="row">
+          <div class="label">启用传统 DNS</div>
+          <label class="switch"><input type="checkbox" id="trad-enabled"><span class="track"></span><span class="thumb"></span></label>
+        </div>
+        <div id="trad-body">
+          <div class="field-row">
+            <div class="field">
+              <label>DNS 服务器（IPv4）</label>
+              <input id="trad-server" type="text" inputmode="decimal" placeholder="223.5.5.5" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="field port">
+              <label>端口</label>
+              <input id="trad-port" type="number" inputmode="numeric" placeholder="53">
+            </div>
+          </div>
+          <div class="field">
+            <label>DNS 服务器（IPv6，可选）</label>
+            <input id="trad-server-v6" type="text" placeholder="2400:3200::1" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label>协议</label>
+            <div class="seg" id="trad-proto">
+              <button type="button" data-proto="udp">UDP</button>
+              <button type="button" data-proto="tcp">TCP</button>
+            </div>
+          </div>
+          <div class="chips" id="trad-presets">
+            <button type="button" class="chip" data-preset="223.5.5.5">阿里 223.5.5.5</button>
+            <button type="button" class="chip" data-preset="119.29.29.29">腾讯 119.29.29.29</button>
+            <button type="button" class="chip" data-preset="114.114.114.114">114 DNS</button>
+          </div>
+          <div class="chips custom-presets" id="trad-custom"></div>
+          <div class="preset-tools">
+            <button type="button" class="text-btn" data-save-preset="traditional">＋ 存为预设</button>
+            <button type="button" class="text-btn" data-manage-preset="dns">管理预设</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 区块 2：DoH -->
+      <div class="card">
+        <h2>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          DoH（DNS over HTTPS）
+        </h2>
+        <p class="card-desc">自定义 URL，可带端口，如 https://dns.alidns.com:8443/dns-query</p>
+        <div class="row">
+          <div class="label">启用 DoH</div>
+          <label class="switch"><input type="checkbox" id="doh-enabled"><span class="track"></span><span class="thumb"></span></label>
+        </div>
+        <div id="doh-body">
+          <div class="field">
+            <label>DoH URL</label>
+            <input id="doh-url" type="url" placeholder="https://dns.alidns.com/dns-query" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="chips" id="doh-presets">
+            <button type="button" class="chip" data-doh="https://dns.alidns.com/dns-query">阿里</button>
+            <button type="button" class="chip" data-doh="https://doh.pub/dns-query">腾讯</button>
+            <button type="button" class="chip" data-doh="https://cloudflare-dns.com/dns-query">Cloudflare</button>
+            <button type="button" class="chip" data-doh="https://dns.google/dns-query">Google</button>
+          </div>
+          <div class="chips custom-presets" id="doh-custom"></div>
+          <div class="preset-tools">
+            <button type="button" class="text-btn" data-save-preset="doh">＋ 存为预设</button>
+            <button type="button" class="text-btn" data-manage-preset="doh">管理预设</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 区块 3：DoT -->
+      <div class="card">
+        <h2>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1.6"/></svg>
+          DoT（DNS over TLS）
+        </h2>
+        <p class="card-desc">TLS 加密，默认端口 853；可填主机名（如 dns.alidns.com）或 IP</p>
+        <div class="row">
+          <div class="label">启用 DoT</div>
+          <label class="switch"><input type="checkbox" id="dot-enabled"><span class="track"></span><span class="thumb"></span></label>
+        </div>
+        <div id="dot-body">
+          <div class="field-row">
+            <div class="field">
+              <label>DoT 服务器（主机名 / IPv4）</label>
+              <input id="dot-server" type="text" placeholder="dns.alidns.com" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="field port">
+              <label>端口</label>
+              <input id="dot-port" type="number" inputmode="numeric" placeholder="853">
+            </div>
+          </div>
+          <div class="field">
+            <label>DoT 服务器（IPv6，可选）</label>
+            <input id="dot-server-v6" type="text" placeholder="2400:3200::1" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="chips" id="dot-presets">
+            <button type="button" class="chip" data-dot="dns.alidns.com">阿里</button>
+            <button type="button" class="chip" data-dot="dot.pub">腾讯</button>
+            <button type="button" class="chip" data-dot="one.one.one.one">Cloudflare</button>
+            <button type="button" class="chip" data-dot="dns.google">Google</button>
+          </div>
+          <div class="chips custom-presets" id="dot-custom"></div>
+          <div class="preset-tools">
+            <button type="button" class="text-btn" data-save-preset="dot">＋ 存为预设</button>
+            <button type="button" class="text-btn" data-manage-preset="dot">管理预设</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 区块 4：分流策略 -->
+      <div class="card">
+        <h2>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="M8 7.5 11 15.8M16 7.5 13 15.8"/></svg>
+          分流策略
+        </h2>
+        <p class="card-desc">多条通道可同时启用、共同生效，不是二选一</p>
+        <div class="radio-list" id="strategy-list">
+          <div class="radio-card" data-strategy="all_traditional">
+            <span class="radio"></span>
+            <div><div class="t">全部走传统 DNS</div><div class="d">所有查询都通过传统 DNS（UDP/TCP）解析</div></div>
+          </div>
+          <div class="radio-card" data-strategy="all_doh">
+            <span class="radio"></span>
+            <div><div class="t">全部走 DoH</div><div class="d">所有查询都通过 DoH（HTTPS）解析</div></div>
+          </div>
+          <div class="radio-card" data-strategy="all_dot">
+            <span class="radio"></span>
+            <div><div class="t">全部走 DoT</div><div class="d">所有查询都通过 DoT（TLS 853）解析</div></div>
+          </div>
+          <div class="radio-card" data-strategy="smart_failover">
+            <span class="radio"></span>
+            <div><div class="t">智能分流（故障转移）</div><div class="d">按优先级依次尝试已启用通道：DoH → DoT → 传统 DNS，某条失败自动切换</div></div>
+          </div>
+          <div class="radio-card" data-strategy="parallel_race">
+            <span class="radio"></span>
+            <div><div class="t">并行竞速</div><div class="d">每条查询同时发往所有已启用通道，取最快返回的结果，延迟最低</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 区块 5：运行状态 -->
+      <div class="card">
+        <h2>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>
+          运行状态
+        </h2>
+        <p class="card-desc">VPN 运行状态与各通道实时统计</p>
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="name"><span>已处理查询</span></div>
+            <div class="num" id="stat-total">0</div>
+            <div class="sub" id="stat-uptime">未运行</div>
+          </div>
+          <div class="stat" id="stat-traditional">
+            <div class="name"><span>传统 DNS</span><button type="button" class="test-btn" data-test="traditional">测试</button></div>
+            <div class="num" id="stat-trad-queries">0</div>
+            <div class="sub" id="stat-trad-sub">失败 0 · 均 0ms</div>
+          </div>
+          <div class="stat" id="stat-doh">
+            <div class="name"><span>DoH</span><button type="button" class="test-btn" data-test="doh">测试</button></div>
+            <div class="num" id="stat-doh-queries">0</div>
+            <div class="sub" id="stat-doh-sub">失败 0 · 均 0ms</div>
+          </div>
+          <div class="stat" id="stat-dot">
+            <div class="name"><span>DoT</span><button type="button" class="test-btn" data-test="dot">测试</button></div>
+            <div class="num" id="stat-dot-queries">0</div>
+            <div class="sub" id="stat-dot-sub">失败 0 · 均 0ms</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 电池优化 -->
+      <div class="card">
+        <h2>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="8" width="17" height="9" rx="2"/><path d="M22 11v3"/><path d="M9 11v3M13 11v3"/></svg>
+          保持后台运行
+        </h2>
+        <p class="card-desc">部分厂商系统会杀后台。建议将本应用加入电池优化白名单，并锁定后台任务，避免 VPN 被中断。</p>
+        <button type="button" class="text-btn" id="btn-battery" style="padding-left:0">打开电池优化设置 →</button>
+      </div>
+
+    </section>
+
+    <!-- ================= 日志页 ================= -->
+    <section id="page-log" class="hidden">
+      <div class="card">
+        <div class="log-toolbar">
+          <span class="count" id="log-count">最近 0 条查询</span>
+          <button type="button" class="text-btn" id="btn-clear-log">清空</button>
+        </div>
+        <div id="log-list"></div>
+        <div id="log-empty" class="empty">暂无查询记录<br>启动服务后，DNS 查询记录会显示在这里</div>
+      </div>
+    </section>
+
+    <!-- ================= 关于页 ================= -->
+    <section id="page-about" class="hidden">
+      <div class="card">
+        <div class="about-logo">
+          <svg viewBox="0 0 100 100" fill="none">
+            <rect width="100" height="100" rx="22" fill="#3B82F6"/>
+            <path d="M50 16 L80 26 L80 50 C80 66 67 78 50 85 C33 78 20 66 20 50 L20 26 Z"
+                  fill="rgba(255,255,255,.18)" stroke="#fff" stroke-width="4"/>
+            <rect x="29" y="38" width="42" height="7" rx="3.5" fill="#fff"/>
+            <rect x="29" y="50" width="42" height="7" rx="3.5" fill="#fff"/>
+            <rect x="29" y="62" width="28" height="7" rx="3.5" fill="#fff"/>
+          </svg>
+          <div class="name">DNSSwitch</div>
+          <div class="ver" id="about-version">v1.0.0</div>
+          <div class="free-badge">✓ 完全免费 · 无广告 · 无广告 SDK</div>
+        </div>
+        <div class="about-item"><span>核心特性</span><span class="v">传统 DNS + DoH / DoT 并行</span></div>
+        <div class="about-item"><span>自定义端口</span><span class="v">支持</span></div>
+        <div class="about-item"><span>数据收集</span><span class="v">不收集任何 DNS 数据</span></div>
+        <div class="about-item"><span>开源协议</span><span class="v">MIT-0</span></div>
+        <div style="margin-top:14px">
+          <button type="button" class="text-btn" id="btn-privacy" style="padding-left:0">查看隐私政策 →</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 底部导航 -->
+  <nav class="bottom-nav">
+    <div class="nav-inner">
+      <button type="button" data-page="config" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.14.36.4.67.73.88.33.21.72.32 1.11.29H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>
+        配置
+      </button>
+      <button type="button" data-page="log">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+        日志
+      </button>
+      <button type="button" data-page="about">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+        关于
+      </button>
+    </div>
+  </nav>
+</div>
+
+<!-- VPN 授权引导 -->
+<div id="modal-guide" class="modal-mask hidden">
+  <div class="modal">
+    <h3>需要 VPN 权限</h3>
+    <p>DNSSwitch 通过系统 VPN 接口接管 DNS 查询：所有 DNS 请求会进入应用，按你配置的通道（传统 DNS / DoH / DoT）解析后再返回。<br><br>本应用<b>不会</b>转发你的其他网络流量，<b>不会</b>收集任何 DNS 数据，<b>不含任何广告</b>。被其他设备信任的本地网络（如公司内网）解析可能受影响，可随时在系统设置中断开。</p>
+    <div class="btns">
+      <button type="button" class="ghost" id="btn-guide-cancel">暂不</button>
+      <button type="button" class="primary" id="btn-guide-ok">去授权</button>
+    </div>
+  </div>
+</div>
+
+<!-- 预设管理 -->
+<div id="modal-presets" class="modal-mask hidden">
+  <div class="modal wide">
+    <h3>预设管理</h3>
+    <p class="modal-desc">把常用的 DNS / DoH / DoT 服务器存成预设，随时一键切换。也可从 txt 文件批量导入。</p>
+
+    <div class="seg small" id="preset-filter">
+      <button type="button" data-filter="all" class="active">全部</button>
+      <button type="button" data-filter="dns">传统 DNS</button>
+      <button type="button" data-filter="doh">DoH</button>
+      <button type="button" data-filter="dot">DoT</button>
+    </div>
+
+    <div id="preset-list" class="preset-list"></div>
+    <div id="preset-empty" class="empty">还没有自定义预设<br>在上方通道卡片点「＋ 存为预设」，或导入 txt 文件</div>
+
+    <div class="import-block">
+      <div class="import-title">从 txt 文件导入</div>
+      <div class="import-code">每行一条：<b>地址 空格 名字 空格 分类</b><br>例：<code>223.6.6.6 阿里云 DNS</code> · <code>2400:3200::1 阿里云 DNS</code> · <code>dns.alidns.com 阿里云 DoT</code> · <code>https://dns.alidns.com/dns-query 阿里云 DoH</code><br>分类写在行末，dns / doh / dot 均可，<b>不区分大小写</b>；同分类同名字的 IPv4 与 IPv6 会自动合并成一条。</div>
+      <div class="import-actions">
+        <button type="button" class="ghost" id="btn-import-file">选择 txt 文件</button>
+        <button type="button" class="ghost" id="btn-import-paste">导入粘贴文本</button>
+      </div>
+      <textarea id="preset-text" rows="4" placeholder="或直接把列表粘贴到这里，每行一条" spellcheck="false"></textarea>
+      <input type="file" id="preset-file" accept=".txt,text/plain,text/*" class="file-hidden">
+    </div>
+
+    <div class="btns">
+      <button type="button" class="primary" id="btn-presets-close">完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- 预设命名 -->
+<div id="modal-name" class="modal-mask hidden">
+  <div class="modal">
+    <h3>存为预设</h3>
+    <p class="modal-desc">给这条服务器起个名字，之后可在对应通道卡片一键切换。同名同分类的预设会自动合并（IPv4 / IPv6 互补）。</p>
+    <div class="field">
+      <label>名称</label>
+      <input id="preset-name-input" type="text" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="btns">
+      <button type="button" class="ghost" id="btn-name-cancel">取消</button>
+      <button type="button" class="primary" id="btn-name-ok">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

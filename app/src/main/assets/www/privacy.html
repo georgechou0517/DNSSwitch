@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>隐私政策 - DNSSwitch</title>
+<link rel="stylesheet" href="app.css">
+<style>
+  .page { max-width: 520px; margin: 0 auto; padding: 16px 16px 48px; }
+  .back { display: inline-flex; align-items: center; gap: 4px; border: 0; background: transparent;
+          color: var(--primary); font-size: 14px; padding: 8px 0; cursor: pointer; }
+  .doc-title { font-size: 22px; font-weight: 700; margin: 8px 0 2px; }
+  .doc-date { font-size: 12px; color: var(--text-2); margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <button class="back" onclick="history.back()">← 返回</button>
+  <div class="doc-title">隐私政策</div>
+  <div class="doc-date">DNSSwitch · 最后更新：2026 年</div>
+
+  <div class="card prose">
+    <h3>一、我们收集什么</h3>
+    <p><b>什么都不收集。</b>DNSSwitch 是一款完全本地的 DNS 客户端：不设账号系统、不接入任何统计与崩溃分析 SDK、不含任何广告 SDK、不向任何第三方服务器发送你的使用数据。</p>
+
+    <h3>二、DNS 查询去向哪里</h3>
+    <p>你的 DNS 查询只会发送到<b>你自己在应用内配置</b>的服务器：</p>
+    <ul>
+      <li>传统 DNS：你填写的服务器 IP 与端口（UDP/TCP）；</li>
+      <li>DoH：你填写的 HTTPS 地址；</li>
+      <li>DoT：你填写的服务器 IP 与端口（TLS）。</li>
+    </ul>
+    <p>这些配置仅保存在你的设备本地（Android SharedPreferences），不会上传到任何地方。若你使用公共服务（如阿里 DoH、Cloudflare），其数据处理遵循对应服务提供商的隐私政策，与本应用无关。</p>
+
+    <h3>三、应用权限说明</h3>
+    <ul>
+      <li><b>VpnService（VPN 权限）</b>：用于在本机建立虚拟网卡，接管系统的 DNS 查询并按你的配置解析。<b>不会</b>转发你的其他网络流量（仅 DNS 查询进入应用）。</li>
+      <li><b>INTERNET</b>：用于向你配置的 DNS 服务器发起查询。</li>
+      <li><b>前台服务 / 通知</b>：用于在后台持续运行并显示常驻通知，便于你随时了解运行状态。</li>
+    </ul>
+
+    <h3>四、日志</h3>
+    <p>应用内的「日志」页仅显示最近 100 条查询记录（域名、通道、耗时、成败），<b>只存在于内存中</b>：应用停止服务或进程结束后即丢失，可随时手动清空，不会写入磁盘、不会外发。</p>
+
+    <h3>五、儿童与第三方</h3>
+    <p>本应用不面向 13 岁以下儿童提供服务，也不会向任何第三方共享、出售或交换你的数据——因为根本没有数据离开你的设备。</p>
+
+    <h3>六、政策变更</h3>
+    <p>若本政策更新，将在应用新版本中随发布说明公示。由于本应用不收集任何数据，任何变更都不会影响你的隐私现状。</p>
+
+    <h3>七、联系我们</h3>
+    <p>本项目以 MIT-0 协议开源，你可以审阅全部源码以验证以上声明。问题与建议请通过 GitHub Issues 反馈。</p>
+  </div>
+</div>
+</body>
+</html>

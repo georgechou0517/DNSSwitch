@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  启动器图标前景：白色盾牌 + 三条"数据流"凹槽（凹槽颜色与自适应图标背景色一致，
+  在旧版启动器上由 Pillow 生成的 PNG 直接烘焙该效果）。
+  108x108 视口，内容限制在中心 72x72 安全区内。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,23.8 L77,31 L77,52.6 C77,67 66.2,77 54,82.8 C41.8,77 31,67 31,52.6 L31,31 Z" />
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M38.2,36.7 H69.8 V41 H38.2 Z" />
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M38.2,45.4 H69.8 V49.7 H38.2 Z" />
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M38.2,54 H64 V58.3 H38.2 Z" />
+</vector>

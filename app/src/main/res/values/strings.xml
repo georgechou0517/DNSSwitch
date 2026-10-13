@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DNSSwitch</string>
+    <string name="vpn_notification_title">DNSSwitch 正在运行</string>
+    <string name="vpn_notification_text">DNS 查询正通过已配置的通道解析</string>
+    <string name="vpn_notification_stop">停止</string>
+</resources>

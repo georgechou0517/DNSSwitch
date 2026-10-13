@@ -1,0 +1,16 @@
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+# 绝不提交任何签名密钥（发布/调试 keystore 均排除）
+*.jks
+app/keystore/
+__pycache__/
+*.pyc

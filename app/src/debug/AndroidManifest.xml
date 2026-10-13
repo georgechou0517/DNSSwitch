@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- debug 包（applicationId 后缀 .debug）与正式包可共存于同一台设备，
+     改名以便区分，避免测试时点错图标跑到旧版本上。 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application
+        android:label="DNSSwitch 调试"
+        tools:replace="android:label" />
+</manifest>

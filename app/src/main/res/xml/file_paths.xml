@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FileProvider 可授权的路径：更新 APK 下载到 getExternalFilesDir(Download) -->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-files-path name="update_apk" path="Download/" />
+</paths>

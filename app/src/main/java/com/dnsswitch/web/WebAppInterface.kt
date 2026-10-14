@@ -11,6 +11,7 @@ import com.dnsswitch.config.DnsPreset
 import com.dnsswitch.config.PresetManager
 import com.dnsswitch.dns.ChannelType
 import com.dnsswitch.dns.DnsStats
+import com.dnsswitch.update.UpdateManager
 import com.dnsswitch.vpn.DnsVpnService
 import org.json.JSONObject
 
@@ -156,4 +157,34 @@ class WebAppInterface(private val activity: MainActivity) {
     } catch (e: Exception) {
         "1.0.0"
     }
+
+    /* ---------------- 检查更新 ---------------- */
+
+    /** 异步检查，结果经 window.onUpdateResult(json) 回传；这里立即返回 "checking" 避免阻塞 JS */
+    @JavascriptInterface
+    fun checkUpdate(): String {
+        UpdateManager.checkAsync(activity.applicationContext) { json ->
+            activity.runOnUiThread { activity.deliverUpdateResult(json) }
+        }
+        return "checking"
+    }
+
+    /** 当前下载源：auto / github / gitee */
+    @JavascriptInterface
+    fun getUpdateSource(): String = UpdateManager.getSource()
+
+    /** 手动切换下载源；未识别的值一律落到 auto */
+    @JavascriptInterface
+    fun setUpdateSource(source: String): String {
+        UpdateManager.setSource(source)
+        return UpdateManager.getSource()
+    }
+
+    /**
+     * 下载 APK。Android 10+ 交给 DownloadManager（后台下载 + 通知，完成后自动调起安装）；
+     * 老设备写不了应用私有目录，返回 "browser" 让前端改用浏览器打开下载链接。
+     */
+    @JavascriptInterface
+    fun downloadUpdate(url: String, apkName: String): String =
+        if (UpdateManager.downloadApk(activity, url, apkName) > 0) "downloading" else "browser"
 }

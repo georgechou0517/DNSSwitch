@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  深色模式资源变体：系统开启深色主题时自动生效。
+  主主题用平台 Theme.Material（非 DayNight），Web 页面的深浅由 CSS 的 html.dark 切换，
+  这里只处理原生外壳：状态栏图标在深色下需改为浅色，否则会在深色背景上看不清。
+-->
+<resources>
+    <style name="Theme.DNSSwitch" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/splash_bg</item>
+    </style>
+    <style name="Theme.DNSSwitch.Main" parent="Theme.DNSSwitch">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

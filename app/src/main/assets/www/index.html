@@ -269,6 +269,20 @@
         <div class="about-item"><span>自定义端口</span><span class="v">支持</span></div>
         <div class="about-item"><span>数据收集</span><span class="v">不收集任何 DNS 数据</span></div>
         <div class="about-item"><span>开源协议</span><span class="v">MIT-0</span></div>
+
+        <div class="about-item">
+          <span>检查更新</span>
+          <button type="button" class="text-btn" id="btn-check-update">检查</button>
+        </div>
+        <div class="update-block">
+          <div class="import-title">下载源</div>
+          <div class="seg small" id="update-source">
+            <button type="button" data-source="auto" class="active">自动</button>
+            <button type="button" data-source="gitee">Gitee</button>
+            <button type="button" data-source="github">GitHub</button>
+          </div>
+        </div>
+
         <div style="margin-top:14px">
           <button type="button" class="text-btn" id="btn-privacy" style="padding-left:0">查看隐私政策 →</button>
         </div>
@@ -352,6 +366,19 @@
     <div class="btns">
       <button type="button" class="ghost" id="btn-name-cancel">取消</button>
       <button type="button" class="primary" id="btn-name-ok">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 检查更新结果 -->
+<div id="modal-update" class="modal-mask hidden">
+  <div class="modal">
+    <h3 id="upd-title">检查更新</h3>
+    <div class="upd-ver" id="upd-ver"></div>
+    <p class="upd-notes" id="upd-notes"></p>
+    <div class="btns">
+      <button type="button" class="ghost" id="btn-upd-later">以后再说</button>
+      <button type="button" class="primary" id="btn-upd-download">下载更新</button>
     </div>
   </div>
 </div>

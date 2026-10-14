@@ -92,6 +92,11 @@
   function initPreview() {
     if (!preview) return;
     $('preview-banner').classList.remove('hidden');
+    /* 浏览器预览时同样跟随系统深浅偏好，便于查看深色样式 */
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    var apply = function () { document.documentElement.classList.toggle('dark', mq.matches); };
+    apply();
+    if (mq.addEventListener) mq.addEventListener('change', apply);
   }
 
   /* ---------------- 底部导航 ---------------- */
@@ -680,12 +685,89 @@
 
   /* ---------------- 关于页 ---------------- */
   function initAbout() {
-    var v = preview ? 'v1.0.0 (预览)' : call('getAppVersion');
-    $('about-version').textContent = 'v' + v;
+    $('about-version').textContent = preview ? 'v1.0.0 (预览)' : 'v' + call('getAppVersion');
     $('btn-privacy').addEventListener('click', function () {
       location.href = 'privacy.html';
     });
   }
+
+  /* ---------------- 检查更新 ---------------- */
+  var updateInfo = null;
+
+  function initUpdate() {
+    setUpdateSource(preview ? 'auto' : (call('getUpdateSource') || 'auto'));
+    $$('#update-source button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var s = b.getAttribute('data-source');
+        setUpdateSource(s);
+        if (preview) { toast('预览模式：下载源不会保存'); return; }
+        call('setUpdateSource', s);
+        toast('下载源：' + sourceLabel(s));
+      });
+    });
+    $('btn-check-update').addEventListener('click', doCheckUpdate);
+    $('btn-upd-later').addEventListener('click', closeUpdateModal);
+    $('modal-update').addEventListener('click', function (e) {
+      if (e.target === $('modal-update')) closeUpdateModal();
+    });
+    $('btn-upd-download').addEventListener('click', doDownloadUpdate);
+  }
+
+  function setUpdateSource(s) {
+    $$('#update-source button').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-source') === s);
+    });
+  }
+
+  function sourceLabel(s) {
+    if (s === 'gitee') return 'Gitee';
+    if (s === 'github') return 'GitHub';
+    return '自动（按地区）';
+  }
+
+  function doCheckUpdate() {
+    if (preview) { toast('预览模式不支持检查更新'); return; }
+    var btn = $('btn-check-update');
+    btn.disabled = true;
+    btn.textContent = '检查中…';
+    call('checkUpdate'); /* 结果经 window.onUpdateResult 异步回传 */
+  }
+
+  /** 原生异步检查完成后回调（MainActivity.deliverUpdateResult → evaluateJavascript） */
+  window.onUpdateResult = function (jsonStr) {
+    var r = null;
+    try { r = JSON.parse(jsonStr); } catch (e) { r = null; }
+    var btn = $('btn-check-update');
+    btn.disabled = false;
+    btn.textContent = '检查';
+    if (!r) { toast('检查结果解析失败'); return; }
+    if (!r.ok) { toast(r.error || '检查更新失败'); return; }
+    updateInfo = r;
+    if (!r.hasUpdate) { toast('已是最新版本 v' + r.current); return; }
+    $('upd-title').textContent = '发现新版本 v' + r.latest;
+    $('upd-ver').textContent = '当前 v' + r.current + ' · 下载源：' + sourceLabel(r.source);
+    $('upd-notes').textContent = r.notes || '（本次发布未提供更新说明）';
+    $('modal-update').classList.remove('hidden');
+  };
+
+  function closeUpdateModal() { $('modal-update').classList.add('hidden'); }
+
+  function doDownloadUpdate() {
+    if (!updateInfo) { closeUpdateModal(); return; }
+    var url = updateInfo.apkUrl;
+    closeUpdateModal();
+    if (!url) { openExternal(updateInfo.pageUrl); return; }
+    if (preview) { toast('预览模式不支持下载'); return; }
+    /* Android 10+ 走系统下载器（完成后自动调起安装）；老设备回退浏览器打开 */
+    if (call('downloadUpdate', url, updateInfo.apkName || '') === 'downloading') {
+      toast('已开始下载，完成后会提示安装');
+    } else {
+      openExternal(url);
+    }
+  }
+
+  /** 外链交给系统浏览器（WebViewClient 拦截非 file:// 请求） */
+  function openExternal(url) { if (url) location.href = url; }
 
   /* ---------------- 预览模式模拟 ---------------- */
   function startPreviewSimulation() {
@@ -707,6 +789,7 @@
     initLogs();
     initTestButtons();
     initAbout();
+    initUpdate();
 
     if (preview) {
       loadConfigToForm(MOCK.config);

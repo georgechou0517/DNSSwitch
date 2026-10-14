@@ -52,12 +52,14 @@
   - **并行竞速**：每条查询同时发往所有通道，取最快的回答
 - **🔒 只接管 DNS，不碰你的其他流量**：它只拦截 DNS 查询，网页、视频、游戏的流量照常走原路，不会变成全局代理。
 - **🏠 完全本地、零追踪**：所有配置存在你手机上，无账号、无服务器、无广告、无统计 SDK。
+- **🔄 内置检查更新**：「关于」页一点即可检查新版本。按 IP 判断地区——中国大陆自动走 **Gitee** 下载，其它地区走 **GitHub**，也可手动指定下载源；Android 10+ 用系统下载器后台下载，完成后自动弹出安装界面。
+- **🌙 跟随系统深色模式**：手机开启深色主题时，应用界面自动同步切换为深色，无需手动设置。
 
 ---
 
 ## 三、快速上手（3 分钟）
 
-1. 下载 [`DNSSwitch-26.10.1-release.apk`](dist/) 安装；首次打开时系统会弹出 **VPN 权限** 请求（仅用于接管 DNS，不会转发你的其他流量）。
+1. 下载 [`DNSSwitch-26.10.2-release.apk`](dist/) 安装；首次打开时系统会弹出 **VPN 权限** 请求（仅用于接管 DNS，不会转发你的其他流量）。
 2. 在「**配置**」页打开你想用的通道（传统 DNS / DoH / DoT），填服务器地址与端口，或直接点「＋ 存为预设」套用现成服务器。
 3. 点「**启动 DNS 服务**」，顶栏出现「运行中」即生效。
 4. 切到「**日志**」页可查看最近 100 条查询记录；「**关于**」页可看版本与隐私政策。
@@ -136,12 +138,14 @@ Every time you open a website or use an app, your phone must translate the "doma
   - **Parallel race**: sends every query to all enabled channels at once and takes the fastest answer.
 - **🔒 DNS-only, no traffic hijack**: only DNS queries are intercepted; web, video and game traffic flows as usual — no global proxy.
 - **🏠 100% local, zero tracking**: configs live on your device; no accounts, no servers, no ads, no analytics SDK.
+- **🔄 Built-in update checker**: one tap on the About tab. The region is detected by IP — mainland China downloads from **Gitee**, everywhere else from **GitHub** — or you can pin the source manually. On Android 10+ the system downloader fetches it in the background and the install screen opens automatically.
+- **🌙 Follows system dark mode**: switch your phone to the dark theme and the app follows suit — nothing to configure.
 
 ---
 
 ## 3. Quick start (3 minutes)
 
-1. Install [`DNSSwitch-26.10.1-release.apk`](dist/); on first launch the system asks for **VPN permission** (used only to take over DNS — no other traffic is forwarded).
+1. Install [`DNSSwitch-26.10.2-release.apk`](dist/); on first launch the system asks for **VPN permission** (used only to take over DNS — no other traffic is forwarded).
 2. On the **Config** tab, enable the channels you want (Traditional DNS / DoH / DoT), fill in server & port, or tap "＋ Save as preset" to apply a ready-made server.
 3. Tap **Start DNS Service** — "Running" in the app bar means it's active.
 4. The **Logs** tab shows the last 100 queries; **About** shows version and the privacy policy.
@@ -233,6 +237,20 @@ https://doh.pub/dns-query 腾讯 DoH
 
 上面 6 行生成 4 条预设，其中「阿里云 DNS」同时带 IPv4 与 IPv6。
 
+## 检查更新
+
+「关于」页的「检查」按钮读取最新版 Release 并与当前版本比较：
+
+- **数据源**：GitHub `api.github.com/repos/georgechou0517/DNSSwitch/releases/latest` 与 Gitee `gitee.com/api/v5/repos/georgechou17/DNSSwitch/releases/latest`
+- **下载源**：默认 `auto`——按 IP 归属判断，中国大陆走 **Gitee**、其它地区走 **GitHub**；「关于」页可手动固定为 Gitee / GitHub（持久化保存）
+- **地区判断**：优先查 IP 归属接口（3 秒超时），失败后回退到「系统语言 + 时区」猜测，结果缓存 7 天，不会每次检查都多一个请求
+- **版本比较**：`26.10.2`（年.月.本月更新次数）按数值逐段比较——不会把 `26.10.10` 误判为小于 `26.10.2`；tag 的 `v` 前缀、debug 包的 `-debug` 后缀都会忽略
+- **APK 挑选**：Release 资产里优先选名字不含 `debug` 的 APK
+- **下载与安装**：Android 10+ 交给系统 DownloadManager 下载到应用私有目录（**无需存储权限**），完成后自动调起系统安装界面；Android 9 及以下回退为用浏览器打开下载链接
+- **尚未发布 Release 时**：接口返回 404，界面提示「未能获取最新版本信息」，属预期行为
+
+> 检查更新只请求公开的 Release 元数据，不上传任何设备信息，也不含任何统计 SDK。
+
 ## 项目结构
 
 ```
@@ -242,6 +260,7 @@ app/src/main/
 │   ├── web/WebAppInterface.kt   JS ↔ 原生桥接
 │   ├── config/                  配置模型 + 预设模型 + SharedPreferences 持久化
 │   ├── dns/                     DNS 报文工具 / 三通道 / bootstrap / 分流 / 统计
+│   ├── update/                  检查更新：版本比较 / 双源查询 / 下载安装
 │   └── vpn/                     VpnService / 报文解析与响应构造
 ├── assets/www/                  index.html / app.css / app.js / privacy.html
 └── res/                         图标 / 主题 / 字符串
@@ -250,7 +269,7 @@ app/src/main/
 ## 路线图
 
 - [x] P0：VpnService 接管、传统 DNS 自定义、DoH、DoT、三者同开、列表式 UI、配置持久化
-- [x] P1：状态展示、日志（最近 100 条）、通道连通性测试、按钮动效
+- [x] P1：状态展示、日志（最近 100 条）、通道连通性测试、按钮动效、检查更新、深色模式
 - [ ] P2：域名分流、开机自启、DNS 缓存、多配置切换
 - [ ] 网络共享下游设备 DNS 接管（USB 网卡 / 路由器 / 热点）：多数设备**无需 root**——手机开共享后，系统的「共享 DNS 代理」会把下游设备的 DNS 查询经系统解析器转发，而本应用 VPN 激活时已把系统 DNS 指向内置虚拟 DNS，下游 DNS 自动被接管；个别 ROM 若让共享流量绕过 VPN，可关开发者选项里的「网络共享硬件加速」或 root + iptables 透明重定向兜底。真机验证中
 

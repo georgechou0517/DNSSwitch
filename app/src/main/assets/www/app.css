@@ -231,6 +231,19 @@ html.dark .card { border-color: var(--border); }
   border-radius: 10px; padding: 6px 12px; font-size: 12px;
 }
 
+/* ---------- 检查更新 ---------- */
+.update-block { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px; }
+.update-block .import-title { margin-bottom: 8px; }
+.update-block .import-code { margin: 10px 0 0; }
+.about-item .text-btn { padding: 2px 4px; }
+.upd-ver { font-size: 12px; color: var(--text-2); margin-bottom: 10px; }
+.upd-notes {
+  font-size: 12.5px; color: var(--text-2); line-height: 1.7;
+  max-height: 200px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;
+  background: var(--chip-bg); border-radius: 10px; padding: 10px 12px; margin: 0 0 16px;
+}
+.upd-notes:empty { display: none; }
+
 /* ---------- 底部导航 ---------- */
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;

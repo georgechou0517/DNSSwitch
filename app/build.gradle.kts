@@ -11,10 +11,10 @@ android {
         applicationId = "com.dnsswitch"
         minSdk = 24
         targetSdk = 34
-        // 命名规范：年.月.本月更新次数 → 26.10.1 = 2026 年 10 月第 1 次更新
-        // versionCode 取同义整数：年*10000 + 月*100 + 次数 = 261001（须单调递增）
-        versionCode = 261001
-        versionName = "26.10.1"
+        // 命名规范：年.月.本月更新次数 → 26.10.2 = 2026 年 10 月第 2 次更新
+        // versionCode 取同义整数：年*10000 + 月*100 + 次数 = 261002（须单调递增）
+        versionCode = 261002
+        versionName = "26.10.2"
     }
 
     signingConfigs {

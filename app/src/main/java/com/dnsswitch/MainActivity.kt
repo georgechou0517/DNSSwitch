@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import com.dnsswitch.config.ConfigManager
 import com.dnsswitch.config.PresetManager
 import com.dnsswitch.dns.DnsStats
+import com.dnsswitch.update.UpdateManager
 import com.dnsswitch.vpn.DnsVpnService
 import com.dnsswitch.web.WebAppInterface
 import org.json.JSONObject
@@ -53,9 +54,10 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         ConfigManager.init(applicationContext)
         PresetManager.init(applicationContext)
+        UpdateManager.init(applicationContext)
 
         webView = WebView(this)
-        webView.setBackgroundColor(0xFFFFFFFF.toInt())
+        applyWebViewBackground()
         with(webView.settings) {
             javaScriptEnabled = true
             domStorageEnabled = true
@@ -230,11 +232,24 @@ class MainActivity : Activity() {
         emitUiMode(newConfig)
     }
 
-    private fun emitUiMode(config: Configuration? = null) {
+    private fun isNight(config: Configuration? = null): Boolean {
         val c = config ?: resources.configuration
-        val night = (c.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+        return (c.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
                 Configuration.UI_MODE_NIGHT_YES
-        emit(if (night) "ui_mode_dark" else "ui_mode_light")
+    }
+
+    private fun emitUiMode(config: Configuration? = null) {
+        applyWebViewBackground()
+        emit(if (isNight(config)) "ui_mode_dark" else "ui_mode_light")
+    }
+
+    /**
+     * WebView 画布底色跟随系统深色，否则深色模式下首屏与滚动边缘会露出白底。
+     * 深色值对应 app.css 里 html.dark 的 --bg（#0b1220）。
+     */
+    private fun applyWebViewBackground() {
+        val bg = if (isNight()) 0xFF0B1220.toInt() else 0xFFFFFFFF.toInt()
+        runCatching { webView.setBackgroundColor(bg) }
     }
 
     private fun emit(event: String) {
@@ -242,6 +257,18 @@ class MainActivity : Activity() {
             runCatching {
                 webView.evaluateJavascript(
                     "window.onNativeEvent&&window.onNativeEvent('$event')",
+                    null
+                )
+            }
+        }
+    }
+
+    /** 检查更新是异步网络请求，完成后把结果 JSON 回传给 JS */
+    fun deliverUpdateResult(json: String) {
+        webView.post {
+            runCatching {
+                webView.evaluateJavascript(
+                    "window.onUpdateResult&&window.onUpdateResult(${JSONObject.quote(json)})",
                     null
                 )
             }

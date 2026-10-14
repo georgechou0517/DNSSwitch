@@ -252,12 +252,14 @@ app/src/main/
 - [x] P0：VpnService 接管、传统 DNS 自定义、DoH、DoT、三者同开、列表式 UI、配置持久化
 - [x] P1：状态展示、日志（最近 100 条）、通道连通性测试、按钮动效
 - [ ] P2：域名分流、开机自启、DNS 缓存、多配置切换
+- [ ] 网络共享下游设备 DNS 接管（USB 网卡 / 路由器 / 热点）：多数设备**无需 root**——手机开共享后，系统的「共享 DNS 代理」会把下游设备的 DNS 查询经系统解析器转发，而本应用 VPN 激活时已把系统 DNS 指向内置虚拟 DNS，下游 DNS 自动被接管；个别 ROM 若让共享流量绕过 VPN，可关开发者选项里的「网络共享硬件加速」或 root + iptables 透明重定向兜底。真机验证中
 
 ## 常见问题
 
 - **点「启动」提示启动失败**：具体原因会显示在运行控制卡片下方并记入「日志」页。常见原因：设备上已有其他 VPN 在运行、VPN 授权被撤销、厂商安全中心拦截 VPN 权限。关闭其他 VPN 后重试。
 - **启动成功但解析没变化**：确认至少启用一条通道且服务器/端口正确；用运行状态卡片里的「测试」按钮验证单通道连通性。部分 ROM 需把本应用加入电池优化白名单。
 - **服务运行一段时间后被系统杀掉**：加入电池优化白名单，并在最近任务里锁定后台。
+- **可以让共享给下游设备（USB 网卡 / 路由器 / 热点）的流量也走我设的 DNS 吗？**：可以，而且多数设备**无需 root**。手机开启网络共享后，系统自带的「共享 DNS 代理」会把下游设备发来的 DNS 查询经系统解析器转发；而本应用 VPN 激活时已把系统 DNS 指向内置虚拟 DNS（如 `10.111.222.2`），因此下游设备的 DNS 同样被接管，且只拦 DNS、不影响局域网内 IP 互访。**不需要**像某些方案那样去 root 或装 Shizuku。个别 ROM 会让共享流量绕过 VPN，可在开发者选项关闭「网络共享硬件加速」再试；若系统「私人 DNS（DoT）」开着会直连上游、绕过虚拟 DNS，请先关闭。极少数仍不生效的机型，root + iptables 透明重定向（把 `:53` 流量 REDIRECT 到本地转发器）作为兜底——届时将复用现有三通道解析逻辑。
 
 ## 从源码构建
 
@@ -268,15 +270,5 @@ git clone https://github.com/georgechou0517/DNSSwitch.git
 cd DNSSwitch
 echo "sdk.dir=/path/to/Android/sdk" > local.properties
 ./gradlew assembleDebug    # → app/build/outputs/apk/debug/app-debug.apk
-./gradlew assembleRelease  # 需先生成签名密钥（见下）
+./gradlew assembleRelease  # 需先生成签名密钥
 ```
-
-Release 签名（生成 `keystore/dnsswitch-release.jks`，密码与别名均为 `dnsswitch`）：
-
-```bash
-keytool -genkeypair -v -keystore keystore/dnsswitch-release.jks \
-  -alias dnsswitch -keyalg RSA -keysize 2048 -validity 10000 \
-  -storepass dnsswitch -keypass dnsswitch
-```
-
-> `keystore/` 已在 `.gitignore` 中，请勿将签名文件提交到公开仓库。
